@@ -74,6 +74,9 @@ struct Opts {
     /// Where to store temporary files (only used by magic-rollback)
     #[clap(long)]
     temp_path: Option<String>,
+    /// Show what will be activated on the machines
+    #[clap(long)]
+    dry_activate: Option<bool>,
 }
 
 /// Returns if the available Nix installation supports flakes
@@ -546,6 +549,7 @@ async fn run() -> Result<(), RunError> {
         magic_rollback: opts.magic_rollback,
         temp_path: opts.temp_path,
         confirm_timeout: opts.confirm_timeout,
+        dry_activate: opts.dry_activate,
     };
 
     let supports_flakes = test_flake_support().await.map_err(RunError::FlakeTest)?;

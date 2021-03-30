@@ -66,6 +66,10 @@ struct ActivateOpts {
     /// Auto rollback if failure
     #[clap(long)]
     auto_rollback: bool,
+
+    /// Show what will be activated on the machines
+    #[clap(long)]
+    dry_activate: bool,
 }
 
 /// Activate a profile
@@ -348,6 +352,7 @@ pub async fn activate(
     temp_path: String,
     confirm_timeout: u16,
     magic_rollback: bool,
+    dry_activate: bool,
 ) -> Result<(), ActivateError> {
     info!("Activating profile");
 
@@ -363,7 +368,7 @@ pub async fn activate(
     match nix_env_set_exit_status.code() {
         Some(0) => (),
         a => {
-            if auto_rollback {
+            if auto_rollback && !dry_activate {
                 deactivate(&profile_path).await?;
             }
             return Err(ActivateError::SetProfileExitError(a));
@@ -374,6 +379,7 @@ pub async fn activate(
 
     let activate_status = match Command::new(format!("{}/deploy-rs-activate", profile_path))
         .env("PROFILE", &profile_path)
+        .env("DRY_ACTIVATE", if dry_activate { "1" } else { "0" })
         .current_dir(&profile_path)
         .status()
         .await
@@ -381,14 +387,15 @@ pub async fn activate(
     {
         Ok(x) => x,
         Err(e) => {
-            if auto_rollback {
+            if auto_rollback && !dry_activate {
                 deactivate(&profile_path).await?;
             }
             return Err(e);
         }
     };
 
-    match activate_status.code() {
+    if !dry_activate {
+        match activate_status.code() {
         Some(0) => (),
         a => {
             if auto_rollback {
@@ -413,6 +420,9 @@ pub async fn activate(
             }
         };
     }
+
+    }
+
 
     Ok(())
 }
@@ -446,6 +456,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             opts.temp_path,
             activate_opts.confirm_timeout,
             activate_opts.magic_rollback,
+            activate_opts.dry_activate,
         )
         .await
         .map_err(|x| Box::new(x) as Box<dyn std::error::Error>),

@@ -28,6 +28,8 @@ pub struct GenericSettings {
     pub temp_path: Option<String>,
     #[serde(rename(deserialize = "magicRollback"))]
     pub magic_rollback: Option<bool>,
+    #[serde(rename(deserialize = "dryActivate"))]
+    pub dry_activate: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, Clone)]

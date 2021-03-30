@@ -140,6 +140,7 @@ pub struct CmdOverrides {
     pub magic_rollback: Option<bool>,
     pub temp_path: Option<String>,
     pub confirm_timeout: Option<u16>,
+    pub dry_activate: Option<bool>,
 }
 
 #[derive(PartialEq, Debug)]
@@ -389,6 +390,9 @@ pub fn make_deploy_data<'a, 's>(
     }
     if let Some(auto_rollback) = cmd_overrides.auto_rollback {
         merged_settings.auto_rollback = Some(auto_rollback);
+    }
+    if let Some(dry_activate) = cmd_overrides.dry_activate {
+        merged_settings.dry_activate = Some(dry_activate);
     }
     if let Some(magic_rollback) = cmd_overrides.magic_rollback {
         merged_settings.magic_rollback = Some(magic_rollback);
