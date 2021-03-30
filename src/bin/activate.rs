@@ -396,30 +396,30 @@ pub async fn activate(
 
     if !dry_activate {
         match activate_status.code() {
-        Some(0) => (),
-        a => {
-            if auto_rollback {
-                deactivate(&profile_path).await?;
-            }
-            return Err(ActivateError::RunActivateExitError(a));
-        }
-    };
-
-    info!("Activation succeeded!");
-
-    if magic_rollback {
-        info!("Magic rollback is enabled, setting up confirmation hook...");
-
-        match activation_confirmation(profile_path.clone(), temp_path, confirm_timeout, closure)
-            .await
-        {
-            Ok(()) => {}
-            Err(err) => {
-                deactivate(&profile_path).await?;
-                return Err(ActivateError::ActivationConfirmationError(err));
+            Some(0) => (),
+            a => {
+                if auto_rollback {
+                    deactivate(&profile_path).await?;
+                }
+                return Err(ActivateError::RunActivateExitError(a));
             }
         };
-    }
+
+        info!("Activation succeeded!");
+
+        if magic_rollback {
+            info!("Magic rollback is enabled, setting up confirmation hook...");
+
+            match activation_confirmation(profile_path.clone(), temp_path, confirm_timeout, closure)
+                .await
+            {
+                Ok(()) => {}
+                Err(err) => {
+                    deactivate(&profile_path).await?;
+                    return Err(ActivateError::ActivationConfirmationError(err));
+                }
+            };
+        }
 
     }
 
